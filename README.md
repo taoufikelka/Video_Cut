@@ -1,4 +1,4 @@
-A python script that help cutting a long video or movie into small parts.
+A python script that help cutting a long video or movie into small parts. If number of parts isn't defined, the script will automaticlly define one based on parts with the size of 60Mb for each part.
 
 usage: video_cut.py [-h] [-mn MOVIENAME] [-fp FILEPATH] [-pn [PARTSNUMBER]]
 
