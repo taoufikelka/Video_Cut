@@ -13,3 +13,5 @@ optional arguments:
   -pn [PARTSNUMBER], --PartsNumber [PARTSNUMBER]
                         Number of parts, by default it will calculate it
                         automatically (each part will be 60Mb)
+  -z [yes/y or no/n], --Zip [yes/y or no/n]
+                        Compress every part to zip, values can be (yes/y) or (no/n), by default it's No.
