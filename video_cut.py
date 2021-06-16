@@ -8,12 +8,37 @@ import pathlib
 import math
 import zipfile
 
+def str2bool(v):
+    if isinstance(v, bool):
+        return v
+    if v.lower() in ('yes', 'y'):
+        return True
+    elif v.lower() in ('no', 'n'):
+        return False
+    else:
+        raise argparse.ArgumentTypeError('Boolean value expected.')
+
+def Cut(index, fpath, stime, etime, out, zip):
+
+    outputmp4 = out + ".mp4"
+    outputzip = out + ".zip"
+
+    print("\n[+] Part "+str(index+1)+" from "+str(stime)+" to "+str(etime)+" : "+convert_time(etime)+"\n")
+
+    ffmpeg_extract_subclip(fpath, stime, etime, outputmp4)   #create part
+    if zip:
+        zipObj = zipfile.ZipFile(outputzip, mode='w', compression=zipfile.ZIP_DEFLATED)
+        zipObj.write(outputmp4)
+        os.remove(outputmp4)
+        zipObj.close()
+
 # Arguments
 parser = argparse.ArgumentParser(description='Cutting mp4 videos/movies to parts.')
 
 parser.add_argument("-mn","--MovieName", help="Video or Movie title")
 parser.add_argument("-fp","--FilePath", help="Path to .mp4 video file", type=pathlib.Path)
 parser.add_argument("-pn","--PartsNumber", help="Number of parts, by default it will calculate it automatically (each part will be 60Mb)", type=int, const=0, nargs='?')
+parser.add_argument("-z","--Zip", help="Compress the part to zip, values can be (yes/y) or (no/n), by default it's No.", type=str2bool, nargs='?', const=True, default=False)
 args = parser.parse_args()
 
 #file variables
@@ -76,6 +101,7 @@ print("[!] Number of parts : "+str(nbrp))
 print("[!] Step duration : "+convert_time(step))
 print("[!] Step size : "+convert_size(step_size))
 print("[!] Rest : "+convert_time(rest))
+print("[!] Compression : ",args.Zip)
 print("----------------------------------")
 input("Press Enter to continue...")
 
@@ -85,31 +111,14 @@ print("\n[!] Start\n")
 for i in range(nbrp):
 
     output = outputname + Movie_name + "_part_"+str(i+1)	#set name of the part
-    outputmp4 = output + ".mp4"
-    outputzip = output + ".zip"
-
-    zipObj = zipfile.ZipFile(outputzip, mode='w', compression=zipfile.ZIP_DEFLATED)
 
     if i < nbrp-1 :
-
-        print("\n[+] Part "+str(i+1)+" from "+str(start_time)+" to "+str(end_time)+" : "+convert_time(end_time)+"\n")
-
-        ffmpeg_extract_subclip(filepath, start_time, end_time, outputmp4)	#create part
-        zipObj.write(outputmp4)
-        os.remove(outputmp4)
-
+        Cut(i, filepath, start_time, end_time, output, args.Zip)
         start_time = end_time
         end_time += step
 
     else :
-
         end_time += rest 	#if it is the last part, it will add the remainder
+        Cut(i, filepath, start_time, end_time, output, args.Zip)
 
-        print("\n[+] Part "+str(i+1)+" from "+str(start_time)+" to "+str(end_time)+" : "+convert_time(end_time)+"\n")
-
-        ffmpeg_extract_subclip(filepath, start_time, end_time, outputmp4)
-        zipObj.write(outputmp4)
-        os.remove(outputmp4)
-
-zipObj.close()
 print("\n[!] End\n")
